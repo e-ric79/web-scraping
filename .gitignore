@@ -214,3 +214,6 @@ test_api.py
 .vscode/settings.json
 
 .github/workflows/ci.yaml
+
+data.json
+test_data.json
