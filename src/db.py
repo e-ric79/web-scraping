@@ -10,9 +10,22 @@ class Database:
         self.db=TinyDB(db_path)
         self.products=self.db.table("products")
 
-    def insert_product(self,product_data):
-            product_data["created at"]=datetime.now().isoformat()
-            return self.products.insert(product_data)
+    # ✅ Check for existing ASIN before inserting
+    def insert_product(self, product_data):
+        product_data["created_at"] = datetime.now().isoformat()
+    
+        Product = Query()
+        existing = self.products.get(Product.asin == product_data.get("asin"))
+    
+        if existing:
+        # Update existing record instead of inserting duplicate
+          return self.products.update(
+            product_data,
+            Product.asin == product_data.get("asin")
+        )
+    
+        return self.products.insert(product_data)
+
         
     def get_product(self,asin):
             product=Query()
