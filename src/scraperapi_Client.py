@@ -45,6 +45,9 @@ def post_query(payload):
         SCRAPERAPI_URL,
         params={"api_key": api_key, "url": amazon_url, "autoparse": "true"},
     )
+    # ✅ Show exact error before raising
+    if not response.ok:
+        st.error(f"ScraperAPI Error: {response.status_code} — {response.text[:300]}")
 
     response.raise_for_status()
     return response.json()
