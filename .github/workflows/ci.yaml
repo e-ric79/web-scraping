@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -9,7 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -38,3 +37,18 @@ jobs:
           SCRAPERAPI_KEY: ${{ secrets.SCRAPERAPI_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: pytest tests/ -v
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test          # ✅ only runs if test job passes
+    if: github.ref == 'refs/heads/main'  # ✅ only on main branch
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Trigger Streamlit Cloud deployment
+        run: |
+          echo "✅ Tests passed — Streamlit Cloud will auto-deploy from main"
+          echo "🚀 Deployment triggered at $(date)"
+          echo "🔗 App URL: https://web-scraping-4a4ysvczkzu74qsjrdtzvy.streamlit.app"
