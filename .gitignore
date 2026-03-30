@@ -208,3 +208,9 @@ __marimo__/
 
 # py files
 test_api.py
+
+.streamlit/secrets.toml
+
+.vscode/settings.json
+
+.github/workflows/ci.yaml

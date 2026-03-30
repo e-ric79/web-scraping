@@ -31,7 +31,10 @@ def extract_content(payload):
 
 
 def post_query(payload):
-    api_key = os.getenv("SCRAPERAPI_KEY")
+    try:
+        api_key = st.secrets["SCRAPERAPI_KEY"]
+    except Exception:
+        api_key = os.getenv("SCRAPERAPI_KEY")
 
     if not api_key:
         raise ValueError("SCRAPERAPI_KEY not found in .env file")
@@ -233,7 +236,10 @@ def search_competitors(query_title, domain, categories, pages=1, geo_location=""
 
 
 def post_search_query(payload):
-    api_key = os.getenv("SCRAPERAPI_KEY")
+    try:
+        api_key = st.secrets["SCRAPERAPI_KEY"]  # ✅ Streamlit Cloud
+    except Exception:
+        api_key = os.getenv("SCRAPERAPI_KEY")
 
     if not api_key:
         raise ValueError("SCRAPERAPI_KEY not found in .env file")
