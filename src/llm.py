@@ -1,51 +1,55 @@
 import os
 from dotenv import load_dotenv
-from typing import Optional,List
+from typing import Optional, List
 from src.db import Database
-from pydantic import BaseModel,Field
+from pydantic import BaseModel, Field
 import langchain
 from langchain_groq import ChatGroq
 
 load_dotenv()
 
+
 class CompetitorInsights(BaseModel):
-    asin:str
-    title:Optional[str]
-    price:Optional[float]
-    currency:Optional[str]
-    rating:Optional[float]
-    key_points:List[str]=Field(default_factory=list)
+    asin: str
+    title: Optional[str]
+    price: Optional[float]
+    currency: Optional[str]
+    rating: Optional[float]
+    key_points: List[str] = Field(default_factory=list)
+
 
 class AnalysisOutput(BaseModel):
-    summary:str
-    positioning:str
-    top_competitors:List[CompetitorInsights]
-    recommendations:List[str]
+    summary: str
+    positioning: str
+    top_competitors: List[CompetitorInsights]
+    recommendations: List[str]
 
-def format_competitors(db,parent_asin):
-    comps=db.search_products(({"parent_asin":parent_asin}))
-    return[
+
+def format_competitors(db, parent_asin):
+    comps = db.search_products(({"parent_asin": parent_asin}))
+    return [
         {
-            "asin":c["asin"],
-            "title":c["title"],
-            "price":c["price"],
-            "currency":c.get("currency"),
-            "rating":c.get("rating"),
-            "amazon_domain":c.get("amazon_domain")
+            "asin": c["asin"],
+            "title": c["title"],
+            "price": c["price"],
+            "currency": c.get("currency"),
+            "rating": c.get("rating"),
+            "amazon_domain": c.get("amazon_domain"),
         }
         for c in comps
     ]
+
 
 def analyze_competitors(asin):
     from langchain_openai import ChatOpenAI
     from langchain.prompts import PromptTemplate
     from langchain_core.output_parsers import PydanticOutputParser
 
-    db=Database()
-    product=db.get_product(asin)
-    competitors=format_competitors(db,asin)
+    db = Database()
+    product = db.get_product(asin)
+    competitors = format_competitors(db, asin)
 
-    parser=PydanticOutputParser(pydantic_object=AnalysisOutput)
+    parser = PydanticOutputParser(pydantic_object=AnalysisOutput)
 
     template = (
         "You are a market analyst. Given a product and its competitor list, "
@@ -62,15 +66,29 @@ def analyze_competitors(asin):
         "{format_instructions}"
     )
 
-    prompt=PromptTemplate(
+    prompt = PromptTemplate(
         template=template,
-        input_variables=["product_title","brand","currency","price","rating","categories","amazon_domain","competitors","format_instructions"],
-        partial_variables={"format_instructions":parser.get_format_instructions()}
+        input_variables=[
+            "product_title",
+            "brand",
+            "currency",
+            "price",
+            "rating",
+            "categories",
+            "amazon_domain",
+            "competitors",
+            "format_instructions",
+        ],
+        partial_variables={"format_instructions": parser.get_format_instructions()},
     )
 
-    llm=ChatGroq(model="llama-3.3-70b-versatile",api_key=os.getenv("GROQ_API_KEY"),temperature=0)
+    llm = ChatGroq(
+        model="llama-3.3-70b-versatile",
+        api_key=os.getenv("GROQ_API_KEY"),
+        temperature=0,
+    )
 
-    chain=prompt|llm|parser
+    chain = prompt | llm | parser
 
     result = chain.invoke(
         {
@@ -88,7 +106,7 @@ def analyze_competitors(asin):
     lines = [
         "Summary:\n" + result.summary,
         "\nPositioning:\n" + result.positioning,
-        "\nCompetitors:"
+        "\nCompetitors:",
     ]
 
     for c in result.top_competitors[:5]:
