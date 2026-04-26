@@ -1,8 +1,17 @@
 import streamlit as st
+from fastapi import FastAPI
 from src.scraperapi_Client import scrape_product_details
 from src.services import scrape_and_store_product, fetch_and_store_competitors
 from src.db import Database
 from src.llm import analyze_competitors
+
+# FastAPI app for Vercel deployment
+app = FastAPI()
+
+
+@app.get("/")
+def read_root():
+    return {"message": "Amazon Competitor Analysis API", "status": "running"}
 
 
 def render_header():
