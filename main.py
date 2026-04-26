@@ -11,7 +11,7 @@ def render_header():
 
 
 def render_inputs():
-    asin = st.text_input("ASIN", placeholder="e.g ., 2325142")
+    asin = st.text_input("ASIN", placeholder="e.g ., B08N5WRWNW")
     geo = st.text_input("ZIP/Postal Code", placeholder="e.g., 83980")
     domain = st.selectbox(
         "Domain",
